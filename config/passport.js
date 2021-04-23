@@ -41,12 +41,10 @@ const strategy = new LocalStrategy(customFields, verifyCallback);
 passport.use(strategy);
  
 passport.serializeUser((user, done) => {
-    console.log(user)
     done(null, user.email)
 })
 
 passport.deserializeUser((userEmail, done) => {
-    console.log(userEmail)
     pool
         .query('SELECT * FROM users WHERE email = $1;', [userEmail])
         .then((user) => {

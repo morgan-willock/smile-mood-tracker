@@ -11,7 +11,7 @@ const session = require('express-session');
 const { Pool } = require('pg');
 const genPassword = require('./lib/passwordUtil').genPassword;
 const isAuth = require('./lib/authMiddleware').isAuth
-const cors = require('cors')
+// const cors = require('cors')
 
 app.use(express.json()); 
 app.use(express.urlencoded({ extended: false }));
@@ -79,7 +79,7 @@ app.get('/logout', (req, res, next) => {
 })
 
 app.get('/protected-route', isAuth, (req, res, next) => {
-    res.send('You made it')
+    res.json({ authorized: true })
 })
 
 // PORT CONNECTION
