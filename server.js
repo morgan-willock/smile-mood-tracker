@@ -56,17 +56,7 @@ app.get('/login-failure', (req, res) => {
     res.send({ login: "failed" })
 })
 
-app.get('/test', (req, res) => {
-    let id = 2
-    pool
-        .query('SELECT * FROM users WHERE id = $1;', [id])
-        .then(db => res.send(db.rows))
-        .catch(err => console.error('Error executing query', err.stack))
-})
-
 app.post('/register', async (req, res, next) => {
-
-    console.log('arrived')
 
     const hashedPassword = await genPassword(req.body.password)
     const email = req.body.email
@@ -75,8 +65,10 @@ app.post('/register', async (req, res, next) => {
 
     if (!emailExistsBool) {
         pool.query('insert into users (email, hash) values ($1, $2);', [email, hashedPassword])
+        console.log("email inserted into db")
         res.json({ register: 'success' })
     } else {
+        console.log("email taken")
         res.json({ register: 'failed' })
     }
 })
