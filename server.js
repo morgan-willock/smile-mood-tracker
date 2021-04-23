@@ -11,6 +11,7 @@ const session = require('express-session');
 const { Pool } = require('pg');
 const genPassword = require('./lib/passwordUtil').genPassword;
 const isAuth = require('./lib/authMiddleware').isAuth
+const cors = require('cors')
 
 app.use(express.json()); 
 app.use(express.urlencoded({ extended: false }));
@@ -18,6 +19,8 @@ app.use(express.urlencoded({ extended: false }));
 const pool = new Pool({
     database: 'smile'
 })
+
+// app.use(cors({ origin: 'http://localhost:3000' }))
 
 app.use(session({
     secret: process.env.SESSION_SECRET,
@@ -30,13 +33,6 @@ require('./config/passport');
 // mandatory to go after app.use(session)
 app.use(passport.initialize())
 app.use(passport.session())
-
-// used for checking session
-// app.use((req, res, next) => {
-//     console.log(req.session)
-//     console.log(req.user)
-//     next()
-// })
 
 // ROUTES //
 app.get('/test', (req, res) => {
@@ -69,13 +65,20 @@ app.get('/test', (req, res) => {
 })
 
 app.post('/register', async (req, res, next) => {
-    const hashedPassword = await genPassword(req.body.pw)
-    const email = req.body.uname
 
-    pool
-        .query('insert into users (email, hash) values ($1, $2);', [email, hashedPassword])
+    console.log('arrived')
 
-    res.json({ Register: 'Success' })
+    const hashedPassword = await genPassword(req.body.password)
+    const email = req.body.email
+    const dbResponse = await pool.query('SELECT EXISTS (SELECT true FROM users WHERE email = $1);', [email])
+    const emailExistsBool = dbResponse.rows[0].exists
+
+    if (!emailExistsBool) {
+        pool.query('insert into users (email, hash) values ($1, $2);', [email, hashedPassword])
+        res.json({ register: 'success' })
+    } else {
+        res.json({ register: 'failed' })
+    }
 })
 
 app.get('/logout', (req, res, next) => {

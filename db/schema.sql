@@ -11,3 +11,8 @@ insert into users
 values
 ('test', 'test'
 );
+
+-- return t if exists else returns false
+ SELECT EXISTS (SELECT true FROM users WHERE email = 'test@test.com');
+
+-- test users have password of test

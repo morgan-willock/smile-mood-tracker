@@ -8,14 +8,14 @@ const pool = new Pool({
 })
 
 const customFields = {
-    usernameField: 'uname',
-    passwordField: 'pw'
+    usernameField: 'email',
+    passwordField: 'password'
 };
 
 // username is the req.body username
-const verifyCallback = (username, password, done) => {
+const verifyCallback = (email, password, done) => {
     pool
-        .query('SELECT * FROM users WHERE email = $1;', [username])
+        .query('SELECT * FROM users WHERE email = $1;', [email])
         .then(db => {
             if(!db.rows) { return done (null, false) }
 
