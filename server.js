@@ -44,7 +44,7 @@ app.get('/login-failure', (req, res) => {
     res.send({ login: "failed" })
 })
 
-app.post('/register', async (req, res, next) => {
+app.post('/register', async (req, res) => {
 
     const hashedPassword = await genPassword(req.body.password)
     const email = req.body.email
@@ -61,19 +61,19 @@ app.post('/register', async (req, res, next) => {
     }
 })
 
-app.post('/mood', isAuth, async (req, res, next) => {
+app.post('/mood', isAuth, async (req, res) => {
 
-    const { userId, todaysDateConverted, moodSelection, activities } = req.body
+    const { userId, moodSelection, activities } = req.body
 
-    pool.query('insert into moods values ($1, $2, $3, $4);', [userId, todaysDateConverted, moodSelection, activities])
+    pool.query('insert into moods (id, mood_selection, activities) values ($1, $2, $3);', [userId, moodSelection, activities])
     console.log(req.body)
     res.json({ message: 'success' })
 })
 
-app.post('/verify-mood', isAuth, async (req, res, next) => {
+app.post('/verify-mood', isAuth, async (req, res) => {
 
     const { userId, todaysDateConverted } = req.body
-    const dbResponse = await pool.query('select * from moods where id = $1 and input_date = $2;', [userId, todaysDateConverted])
+    const dbResponse = await pool.query('select * from moods where id = $1 and input_date = current_date;', [userId])
 
     if (dbResponse.rowCount > 0) {
         res.json({ message: 'success' })
@@ -83,12 +83,20 @@ app.post('/verify-mood', isAuth, async (req, res, next) => {
     }
 })
 
-app.get('/logout', (req, res, next) => {
+app.post('/retrieve-moods', isAuth, async (req, res) => {
+
+    const { userId } = req.body
+    const dbResponse = await pool.query('select * from moods where id = $1;', [userId])
+
+    res.json(dbResponse.rows)
+})
+
+app.get('/logout', (req, res) => {
     req.logout()
     res.json({ logout: "success" })
 })
 
-app.get('/protected-route', isAuth, (req, res, next) => {
+app.get('/protected-route', isAuth, (req, res) => {
     res.json({ authorized: true, userId: req.user.rows[0].id })
 })
 
