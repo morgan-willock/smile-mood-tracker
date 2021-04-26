@@ -35,18 +35,6 @@ app.use(passport.initialize())
 app.use(passport.session())
 
 // ROUTES //
-app.get('/test', (req, res) => {
-    let id = 2
-    pool
-        .query('SELECT * FROM users WHERE id = $1;', [id])
-        .then(db => res.send(db.rows))
-        .catch(err => console.error('Error executing query', err.stack))
-})
-
-app.post('/test', (req, res) => {
-    console.log(req.body)
-    res.json(req.body)
-}) 
 
 app.post('/login', passport.authenticate('local', { failureRedirect: '/login-failure' }), (req, res) => {
     res.json({ login: "success" })
@@ -73,13 +61,35 @@ app.post('/register', async (req, res, next) => {
     }
 })
 
+app.post('/mood', isAuth, async (req, res, next) => {
+
+    const { userId, todaysDateConverted, moodSelection, activities } = req.body
+
+    pool.query('insert into moods values ($1, $2, $3, $4);', [userId, todaysDateConverted, moodSelection, activities])
+    console.log(req.body)
+    res.json({ message: 'success' })
+})
+
+app.post('/verify-mood', isAuth, async (req, res, next) => {
+
+    const { userId, todaysDateConverted } = req.body
+    const dbResponse = await pool.query('select * from moods where id = $1 and input_date = $2;', [userId, todaysDateConverted])
+
+    if (dbResponse.rowCount > 0) {
+        res.json({ message: 'success' })
+    } else {
+        console.log('arrived')
+        res.json({ message: 'failed' })
+    }
+})
+
 app.get('/logout', (req, res, next) => {
     req.logout()
     res.json({ logout: "success" })
 })
 
 app.get('/protected-route', isAuth, (req, res, next) => {
-    res.json({ authorized: true })
+    res.json({ authorized: true, userId: req.user.rows[0].id })
 })
 
 // PORT CONNECTION
