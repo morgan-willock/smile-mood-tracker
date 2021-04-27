@@ -15,13 +15,15 @@ const isAuth = require("./lib/authMiddleware").isAuth;
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+let pool;
+
 if (process.env.PRODUCTION) {
-  const pool = new Pool({
+  pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false }
   })
 } else {
-  const pool = new Pool({
+  pool = new Pool({
     database: "smile",
   });
 }
