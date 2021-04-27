@@ -5,7 +5,7 @@ if (process.env.NODE_ENV !== "production") {
 const express = require("express");
 const bcrypt = require("bcrypt");
 const app = express();
-const port = 8080;
+const port = process.env.PORT || 8080;
 const passport = require("passport");
 const session = require("express-session");
 const { Pool } = require("pg");
@@ -15,9 +15,16 @@ const isAuth = require("./lib/authMiddleware").isAuth;
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-const pool = new Pool({
-  database: "smile",
-});
+if (process.env.PRODUCTION) {
+  pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false }
+  })
+} else {
+  const pool = new Pool({
+    database: "smile",
+  });
+}
 
 app.use(express.static("public"));
 
