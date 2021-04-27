@@ -3,9 +3,17 @@ const LocalStrategy = require('passport-local').Strategy
 const validPassword = require('../lib/passwordUtil').validPassword
 const { Pool } = require('pg')
 
-const pool = new Pool({
-    database: 'smile'
-})
+if (process.env.PRODUCTION) {
+    const pool = new Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl: { rejectUnauthorized: false }
+    })
+  } else {
+    const pool = new Pool({
+      database: "smile",
+    });
+  }
+  
 
 const customFields = {
     usernameField: 'email',
