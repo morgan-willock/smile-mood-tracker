@@ -1,19 +1,20 @@
-const passport = require('passport')
-const LocalStrategy = require('passport-local').Strategy
-const validPassword = require('../lib/passwordUtil').validPassword
-const { Pool } = require('pg')
+const passport = require('passport');
+const LocalStrategy = require('passport-local').Strategy;
+const validPassword = require('../lib/passwordUtil').validPassword;
+const { Pool } = require('pg');
+
+let pool;
 
 if (process.env.PRODUCTION) {
-    const pool = new Pool({
+    pool = new Pool({
       connectionString: process.env.DATABASE_URL,
       ssl: { rejectUnauthorized: false }
     })
   } else {
-    const pool = new Pool({
+    pool = new Pool({
       database: "smile",
     });
   }
-  
 
 const customFields = {
     usernameField: 'email',
