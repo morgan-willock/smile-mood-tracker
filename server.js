@@ -83,6 +83,33 @@ app.post('/verify-mood', isAuth, async (req, res) => {
     }
 })
 
+app.post('/edit-mood', isAuth, async (req, res) => {
+
+    const { userId, date, moodSelection, activities } = req.body
+
+    const dbResponse = await pool.query('select * from moods where id = $1 and input_date = $2;', [userId, date])
+
+    if (dbResponse.rowCount > 0) {
+
+        pool.query('update moods set mood_selection = $1,  activities = $2 where id = $3 and input_date = $4;', [moodSelection, activities, userId, date])
+
+        res.json({ message: 'success' })
+    } else {
+
+        pool.query('insert into moods (id, input_date,mood_selection, activities) values ($1, $2, $3, $4);', [userId, date, moodSelection, activities])
+
+        res.json({ message: 'updated' })
+    }
+})
+
+app.post('/mood-details', isAuth, async (req, res) => {
+
+    const { userId, date } = req.body
+    const dbResponse = await pool.query('select * from moods where id = $1 and input_date = $2;', [userId, date])
+
+    res.json(dbResponse)
+})
+
 app.post('/retrieve-moods', isAuth, async (req, res) => {
 
     const { userId } = req.body
